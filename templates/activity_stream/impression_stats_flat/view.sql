@@ -4,7 +4,7 @@ AS
 SELECT
   tile_id,
   tile_id_types.type AS tile_type,
-  stats.* EXCEPT(tile_id)
+  stats.* EXCEPT (tile_id)
 FROM
   `moz-fx-data-shared-prod.activity_stream_derived.impression_stats_flat_v1` AS stats
 LEFT JOIN

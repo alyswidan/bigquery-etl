@@ -21,19 +21,11 @@ SELECT
   impression_id AS client_id, -- client_id renamed to impression_id in GCP
   flattened_tiles.id AS tile_id,
   addon_version,
-  SUM(CASE WHEN loaded IS NOT NULL THEN 1 ELSE 0 END) AS loaded,
-  SUM(
-    CASE
-    WHEN click IS NULL
-    AND block IS NULL
-    AND pocket IS NULL
-    AND loaded IS NULL THEN 1
-    ELSE 0
-    END
-  ) AS impressions,
-  SUM(CASE WHEN click IS NOT NULL THEN 1 ELSE 0 END) AS clicks,
-  SUM(CASE WHEN block IS NOT NULL THEN 1 ELSE 0 END) AS blocked,
-  SUM(CASE WHEN pocket IS NOT NULL THEN 1 ELSE 0 END) AS pocketed,
+  COUNT(loaded) AS loaded,
+  COUNTIF(click IS NULL AND block IS NULL AND pocket IS NULL AND loaded IS NULL) AS impressions,
+  COUNT(click) AS clicks,
+  COUNT(block) AS blocked,
+  COUNT(pocket) AS pocketed,
   -- the 3x1 layout has a bug where we need to use the position of each element
   -- in the tiles array instead of the actual pos field
   IFNULL(flattened_tiles.pos, alt_pos) AS position,
@@ -44,10 +36,7 @@ SELECT
   version,
   user_prefs,
   release_channel,
-  CASE
-  WHEN shield_id IS NULL THEN 'n/a'
-  ELSE shield_id
-  END AS shield_id,
+  IFNULL(shield_id, 'n/a') AS shield_id,
   sample_id
 FROM
   impression_data
