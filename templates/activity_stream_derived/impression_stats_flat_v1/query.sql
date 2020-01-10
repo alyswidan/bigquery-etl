@@ -1,24 +1,16 @@
-CREATE OR REPLACE VIEW
-  `moz-fx-data-shared-prod.activity_stream.tile_impressions`
-AS
-WITH unioned AS (
+WITH base AS (
   SELECT
     *
   FROM
-    `moz-fx-data-shared-prod.activity_stream_stable.impression_stats_v1`
-  UNION ALL
-  SELECT
-    *
-  FROM
-    `moz-fx-data-shared-prod.activity_stream_stable.impression_stats_v1`
+    activity_stream_stable.impression_stats_v1
   WHERE
-    DATE(submission_timestamp) = CURRENT_DATE()
+    (@submission_date IS NULL OR @submission_date = DATE(submission_timestamp))
 ),
 impression_data AS (
   SELECT
     *
   FROM
-    unioned
+    base
   WHERE
     -- make sure data is valid/non-empty
     ARRAY_LENGTH(tiles) >= 1
@@ -77,6 +69,3 @@ GROUP BY
   release_channel,
   shield_id,
   sample_id
-ORDER BY
-  submission_timestamp,
-  impression_id;
